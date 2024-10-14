@@ -56,13 +56,16 @@ const query = "inception";
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(function () {
     async function fetchMovies(){
+      setIsLoading(true);
       const res = await fetch(
         `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`);
       const data = await res.json();
       setMovies(data.Search);
+      setIsLoading(false);
     }
     fetchMovies();
   }, []);
@@ -77,18 +80,22 @@ export default function App() {
         <NumResults movies={movies} />
       </NavBar>
       <Main>
-        <Box element={<MoviesList movies = {movies}/>}/>
-        <Box 
-          element={
-            <>
-            <Summary watched={watched} />
-            <WatchedMoviesList movies={watched} />
-            </>
-          }
-        />
+        <Box>
+          {isLoading
+            ? <Loader />
+            : <MoviesList movies = {movies}/>}
+        </Box>
+        <Box> 
+          <Summary watched={watched} />
+          <WatchedMoviesList movies={watched}/>
+        </Box>
       </Main>    
     </>
   );
+}
+
+function Loader(){
+  return <p>Loading...</p>
 }
 
 function NavBar({children}){
@@ -138,7 +145,7 @@ function NumResults({movies}){
   )
 }
 
-function Box({element}){ 
+function Box({children}){ 
   const [isOpen, setIsOpen] = useState(true);
 
   return (
@@ -150,7 +157,7 @@ function Box({element}){
         {isOpen ? "–" : "+"}
       </button>
       {isOpen && (
-       element
+       children
       )}
     </div>
   );
