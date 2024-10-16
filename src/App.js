@@ -51,21 +51,44 @@ const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 const KEY = "d9a817c0";
-const query = "inception";
+// const query = "inception";
+const query = "jjhggg";
 
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(function () {
     async function fetchMovies(){
-      setIsLoading(true);
-      const res = await fetch(
-        `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`);
-      const data = await res.json();
-      setMovies(data.Search);
-      setIsLoading(false);
+      try{
+        setIsLoading(true);
+        setError("");
+        const res = await fetch(
+          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`);
+
+        // if (!res.ok) {
+        //   throw new Error(`HTTP error! status: ${res.status}`);
+        // }
+        const data = await res.json();
+        console.log('data:', data)
+
+        if (data.Response === "False") throw new Error ("Movie Not Found")
+
+        setMovies(data.Search);
+  
+      } catch(err) {
+        console.log("Mensaje desde catch:"+ err.message)
+        if (err.message ==="Failed to fetch"){
+          setError ("Somethig went wrong, please try again later.")
+        }
+        else{
+          setError(err.message);
+        }
+      }finally{
+        setIsLoading(false);
+      }
     }
     fetchMovies();
   }, []);
@@ -81,9 +104,12 @@ export default function App() {
       </NavBar>
       <Main>
         <Box>
-          {isLoading
+          {/* {isLoading
             ? <Loader />
-            : <MoviesList movies = {movies}/>}
+            : <MoviesList movies = {movies}/>} */}
+            {isLoading && <Loader />}
+            {!isLoading && !error && <MoviesList movies={movies}/>}
+            {error && <ErrorMessage message={error}/>}
         </Box>
         <Box> 
           <Summary watched={watched} />
@@ -96,6 +122,14 @@ export default function App() {
 
 function Loader(){
   return <p>Loading...</p>
+}
+
+function ErrorMessage({message}){
+  return(
+  <p className="error">
+    <span>⛔</span>{message}
+  </p>
+)
 }
 
 function NavBar({children}){
