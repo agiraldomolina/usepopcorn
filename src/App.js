@@ -179,6 +179,7 @@ function Search({query, setQuery}){
   useEffect(function(){
     function callback(e){
       if (document.activeElement === inputEl.current) return;
+
       if(e.code === "Enter") {
         inputEl.current.focus();
         setQuery(''); 
@@ -190,7 +191,7 @@ function Search({query, setQuery}){
       document.addEventListener('keydown', callback);
     }
 
-  },[])
+  },[setQuery]);
 
   return (
     <input
@@ -264,6 +265,19 @@ function MovieDetails({selectedId, onCloseMovie, onAddWatched, watched}){
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState('');
 
+  // countRef is used to keep track of the number of times the user has rated the movie. 
+  const countRef = useRef(0);
+
+  /**
+ * This effect hook is used to keep track of the number of times the user has rated a movie.
+ * It increments the countRef.current value whenever the userRating state changes.
+ */
+  useEffect(function(){
+    if (userRating) countRef.current=countRef.current++
+  },[userRating]);
+
+  // const isWatched = watched.map((movie)=>movie.imdbID).includes(selectedId);
+
   const watchedUserRating = watched.find((movie)=> movie.imdbID === selectedId)?.userRating;
 
   const {
@@ -290,6 +304,7 @@ function MovieDetails({selectedId, onCloseMovie, onAddWatched, watched}){
       imdbRating: Number(imdbRating),
       runtime:Number(runtime.split(" ")[0]),
       userRating,
+      countRatingDecisions: countRef.current,
     }
     onAddWatched(newWatchedMovie);
     onCloseMovie();
