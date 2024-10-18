@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import StarRating from './StarRating';
 
 const average = (arr) =>
@@ -39,6 +39,13 @@ export default function App() {
     setWatched((watched)=>(watched.filter(movie=>movie.imdbID!==id)));
   }
 
+  /**
+ * This effect hook is used to save the 'watched' state to the local storage whenever it changes.
+ * It listens to the 'watched' state and updates the local storage accordingly.
+ *
+ * @param {Array} watched - The array of movies that the user has watched.
+ * @returns {void}
+ */
   useEffect(
     function (){
       localStorage.setItem('watched', JSON.stringify(watched));
@@ -161,6 +168,29 @@ function Logo(){
 }
 
 function Search({query, setQuery}){
+  // useEffect(function(){
+  //   const el = document.querySelector('.search');
+  //   el.focus();
+  // },[])
+  // This is a wrong implementation to focus the search input
+   
+  const inputEl =  useRef(null);
+
+  useEffect(function(){
+    function callback(e){
+      if (document.activeElement === inputEl.current) return;
+      if(e.code === "Enter") {
+        inputEl.current.focus();
+        setQuery(''); 
+      }         
+    }
+
+    document.addEventListener('keydown', callback);
+    return function(){
+      document.addEventListener('keydown', callback);
+    }
+
+  },[])
 
   return (
     <input
@@ -169,6 +199,7 @@ function Search({query, setQuery}){
       placeholder="Search movies..."
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      ref ={inputEl}
     />
   );
 }
