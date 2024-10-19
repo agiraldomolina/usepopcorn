@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import StarRating from './StarRating';
 import { useMovies } from './useMovies';
+import { useLocalStorageState } from "./useLocalStorageState";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -9,17 +10,15 @@ const average = (arr) =>
 
 export default function App() {
   const [query, setQuery] = useState("");
-  // const [movies, setMovies] = useState([]);
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState("");
-  // const [watched, setWatched] = useState([]);
-  const [watched, setWatched] = useState(
-    function(){
-      const storedValue = localStorage.getItem('watched')
-      return JSON.parse(storedValue)
-    }
-  );
+  const [watched, setWatched] = useLocalStorageState([], "watched");
+
+  // const [watched, setWatched] = useState(
+  //   function(){
+  //     const storedValue = localStorage.getItem('watched')
+  //     return JSON.parse(storedValue)
+  //   }
+  // );
 
   const{movies, isLoading, error}= useMovies(query, handleCloseMovie);
 
@@ -49,10 +48,7 @@ export default function App() {
  * @param {Array} watched - The array of movies that the user has watched.
  * @returns {void}
  */
-  useEffect(
-    function (){
-      localStorage.setItem('watched', JSON.stringify(watched));
-  },[watched])
+  
 
   // useEffect(function () {
   //   const controller = new AbortController();
