@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import StarRating from './StarRating';
 import { useMovies } from './useMovies';
 import { useLocalStorageState } from "./useLocalStorageState";
+import { useKey } from "./useKey";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -175,22 +176,12 @@ function Search({query, setQuery}){
    
   const inputEl =  useRef(null);
 
-  useEffect(function(){
-    function callback(e){
-      if (document.activeElement === inputEl.current) return;
+  useKey('Enter', function (){
+    if (document.activeElement === inputEl.current) return;
 
-      if(e.code === "Enter") {
-        inputEl.current.focus();
-        setQuery(''); 
-      }         
-    }
-
-    document.addEventListener('keydown', callback);
-    return function(){
-      document.addEventListener('keydown', callback);
-    }
-
-  },[setQuery]);
+      inputEl.current.focus();
+      setQuery(''); 
+  })
 
   return (
     <input
@@ -312,6 +303,8 @@ function MovieDetails({selectedId, onCloseMovie, onAddWatched, watched}){
     // // in the next line we can use any name for the average rating, like movie.averageRating this is becuase useState functions return the current state of the variable.
     // setAvgRating((avgRating)=> (avgRating + userRating)/2)
   }
+  
+  useKey("Escape", onCloseMovie);
 
   useEffect(function(){
     function callback(e){
